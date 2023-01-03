@@ -13,14 +13,14 @@ variable "private_dns_zones" {
           time_to_live = number
           records      = list(string)
         }
-      )))
+      )), [])
       cname_records = optional(list(object(
         {
           name         = string
           time_to_live = number
           record       = list(string)
         }
-      )))
+      )), [])
     }
   ))
   description = "Private DNS zones to deploy"
