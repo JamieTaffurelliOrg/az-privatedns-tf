@@ -2,6 +2,8 @@ resource "azurerm_private_dns_zone" "dns_zone" {
   for_each            = { for k in var.private_dns_zones : k.name => k }
   name                = each.key
   resource_group_name = var.resource_group_name
+
+  tags = var.tags
 }
 
 resource "azurerm_private_dns_a_record" "a_records" {
@@ -20,4 +22,28 @@ resource "azurerm_private_dns_cname_record" "cname_records" {
   resource_group_name = var.resource_group_name
   ttl                 = each.value["time_to_live"]
   record              = each.value["record"]
+}
+
+resource "azurerm_private_dns_resolver" "dns_resolver" {
+  for_each            = var.dns_resolver == null ? [] : [var.dns_resolver]
+  name                = var.dns_resolver.name
+  resource_group_name = var.resource_group_name
+  location            = data.azurerm_virtual_network.virtual_network.location
+  virtual_network_id  = data.azurerm_virtual_network.virtual_network.id
+
+  tags = var.tags
+}
+
+resource "azurerm_private_dns_resolver_inbound_endpoint" "example" {
+  for_each                = var.dns_resolver == null ? [] : [var.dns_resolver]
+  name                    = var.dns_resolver.inbound_endpoint_name
+  private_dns_resolver_id = azurerm_private_dns_resolver.dns_resolver[0].id
+  location                = data.azurerm_virtual_network.virtual_network.location
+
+  ip_configurations {
+    private_ip_allocation_method = "Dynamic"
+    subnet_id                    = data.azurerm_subnet.subnet.id
+  }
+
+  tags = var.tags
 }
