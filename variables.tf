@@ -6,7 +6,9 @@ variable "resource_group_name" {
 variable "private_dns_zones" {
   type = list(object(
     {
-      name = string
+      name                              = string
+      link_dns_resolver_virtual_network = optional(bool, false)
+      registration_enabled              = optional(bool, false)
       a_records = optional(list(object(
         {
           name         = string
